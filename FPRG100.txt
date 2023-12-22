@@ -1,0 +1,98 @@
+Definir Alfa xCodRes;
+Definir Alfa xHtpObj;
+Definir Alfa xHtpRet;
+Definir Alfa xJsoObj;
+Definir Alfa xJsoPrp;
+Definir Alfa xJsoVal;
+Definir Alfa xMsgUsu;
+Definir Alfa xNumCep;
+Definir Alfa xUrlBas;
+Definir Alfa xUrlHtp;
+
+@Tratamento de Variáveis@
+vCodRes = 0;                                                  @Cód. HTTP Response@
+xHtpRet = "";                                                 @Objeto de Retorno da Requisição@
+xUrlBas = "https://viacep.com.br/ws/__NUMCEP__/json/";        @URL Base do ViaCEP@
+xNumCep = "01001000";                                         @CEP@ 
+
+@Cria Objeto HTTP@
+HttpObjeto(xHtpObj);
+
+@Desabilita Erro Padrão, evita que mensagens de erros HTPP 4XX/5XX gerem Exceptions em tela ao usuário@  
+HttpDesabilitaErroResposta(xHtpObj);   
+
+@Altera os Cabeçalhos da Requisição@
+HttpAlteraCabecalhoRequisicao(xHtpObj,"Accept","application/json;charset=utf-8");
+HttpAlteraCabecalhoRequisicao(xHtpObj,"Accept-Encoding","gzip, deflate, br");
+HttpAlteraCabecalhoRequisicao(xHtpObj,"Accept-Charset","utf-8");
+HttpAlteraCabecalhoRequisicao(xHtpObj,"Cache-Control","no-cache");  
+HttpAlteraCabecalhoRequisicao(xHtpObj,"Content-Type","application/json;charset=utf-8");
+HttpAlteraCodifCaracPadrao(xHtpObj,"utf-8");
+
+@Monta URL, foi criado dessa forma para fim didático@
+TrocaString(xUrlBas,"__NUMCEP__",xNumCep,xUrlHtp);
+
+@Efetua a Requisição@
+HttpGet(xHtpObj,xUrlHtp,xHtpRet);
+
+@Verifica Cód. HTTP Response@
+HttpLeCodigoResposta(xHtpObj,vCodRes);
+
+@Se a resposta foi "OK", extrai os dados do JSON@
+Se((vCodRes >= 200)e(vCodRes <= 204))
+  {
+    @Tratamento de Variáveis@
+    xJsoObj = xHtpRet;
+    
+    @Logradouro@
+    xJsoPrp = "logradouro";
+    hasKeyJSON(xJsoObj,xJsoPrp,vJsoVer);
+    Se(vJsoVer = 1)
+      {
+        getJSONString(xJsoObj,xJsoPrp,xJsoVal);  
+        xMsgUsu = xJsoPrp + ": " + xJsoVal;
+        Mensagem(Retorna,xMsgUsu); 
+      } 
+      
+    @Complemento@
+    xJsoPrp = "complemento";
+    hasKeyJSON(xJsoObj,xJsoPrp,vJsoVer);
+    Se(vJsoVer = 1)
+      {
+        getJSONString(xJsoObj,xJsoPrp,xJsoVal);  
+        xMsgUsu = xJsoPrp + ": " + xJsoVal;
+        Mensagem(Retorna,xMsgUsu); 
+      } 
+      
+    @Bairro@
+    xJsoPrp = "bairro";
+    hasKeyJSON(xJsoObj,xJsoPrp,vJsoVer);
+    Se(vJsoVer = 1)
+      {
+        getJSONString(xJsoObj,xJsoPrp,xJsoVal);  
+        xMsgUsu = xJsoPrp + ": " + xJsoVal;
+        Mensagem(Retorna,xMsgUsu); 
+      } 
+      
+    @Localidade@
+    xJsoPrp = "localidade";
+    hasKeyJSON(xJsoObj,xJsoPrp,vJsoVer);
+    Se(vJsoVer = 1)
+      {
+        getJSONString(xJsoObj,xJsoPrp,xJsoVal);  
+        xMsgUsu = xJsoPrp + ": " + xJsoVal;
+        Mensagem(Retorna,xMsgUsu); 
+      } 
+  }
+
+@Tratamento de Erro@  
+Se((vCodRes < 200)ou(vCodRes >= 300))
+  {
+    @Tratamento de Variáveis@
+    IntParaAlfa(vCodRes,xCodRes);
+    
+    @Mensagem@
+    xMsgUsu = "HTTP " + xCodRes + ": Verifique os parâmetros da requisição";
+    Mensagem(Retorna,xMsgUsu); 
+  }
+  
